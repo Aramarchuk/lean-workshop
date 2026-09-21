@@ -2,8 +2,9 @@
 
 This project is a two-day Lean workshop with lecture scaffolds and seminar practice.
 
-- Day 1: `Cyprus.Day1Lecture` introduces propositions, proof terms, tactics, types, equality, quantifiers, and knights-and-knaves modelling. `Cyprus.Day1Seminar` provides practice. `Cyprus.Puzzles` is the separate logic-puzzle collection.
-- Day 2: `Cyprus.Day2Lecture` introduces induction, recursive functions, inductive predicates, parity, decidability, and optional Collatz. `Cyprus.Day2Seminar` provides practice.
+- Day 1 is logic. `Cyprus.Day1Lecture` covers the connectives, tactic mode, classical reasoning, quantifiers, and knights-and-knaves puzzles, with islanders as values and their roles as a two-valued type. `Cyprus.Day1Seminar` provides practice, ending with the puzzle collection.
+- Day 2 is types, functions, and induction. `Cyprus.Day2Lecture` covers inductive types, equality, injective and surjective functions, recursion and induction, inductive predicates, decidability, and optional Collatz. `Cyprus.Day2Seminar` provides practice.
+- `Cyprus.Islanders` is the support module for the puzzles. Do not modify it.
 
 ## Setup
 
@@ -16,4 +17,6 @@ lake build
 
 ## Teaching and exercises
 
-Lecture files are live-teaching scaffolds. They may contain authored `sorry` placeholders that the instructor fills during a session; published updates retain those files unchanged. Seminar files contain complete staff proofs between `-- TO_SORRY` and `-- SORRY_END`. The student export replaces each marked proof with `sorry`. Replace a seminar `sorry` with your own proof and run `lake build` to check it. `Cyprus.lean` imports all workshop modules.
+Lecture files are live-teaching scaffolds. They may contain authored `sorry` placeholders that the instructor fills during a session; published updates retain those files unchanged.
+
+Seminar files contain exercises. Replace each `sorry` with your own proof and run `lake build`, or watch the editor, to check it. A puzzle comes in two parts: an `Answer`, which you fill in with `impossible` or a `verdict (A is-a knight, B is-a knave)`, and a theorem whose goal `claim% answer [A, B]` unfolds to whatever your answer claims. Fill in the answer first; the theorem then tells you what to prove. `Cyprus.lean` imports all workshop modules.

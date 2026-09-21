@@ -1,138 +1,141 @@
 /-
-# Day 1 lecture: logic, proof terms, and types
-
-A proposition is a type in `Prop`; a proof is a term of that type.  This file
-contains the instructor's worked examples.  Practice problems are in
-`Cyprus.Day1Seminar`, including the separate puzzle collection.
+# Day 1 lecture: logic
 -/
 
+import Cyprus.Islanders
 import Mathlib.Tactic
 
 namespace Cyprus.Day1Lecture
 
-section Logic
+section Connectives
 
 variable {A B C : Prop}
 
-/-- A proof of an implication is a function on proofs. -/
-theorem implication_trans : (A → B) → (B → C) → A → C := fun ab bc a => bc (ab a)
+-- ## Truth and implication
 
-/-- A proof of a conjunction stores both component proofs. -/
-theorem and_swap : A ∧ B → B ∧ A := fun ⟨a, b⟩ => ⟨b, a⟩
+theorem true_is_true : True := by sorry
 
-/-- A proof of a disjunction chooses a constructor. -/
-theorem or_swap : A ∨ B → B ∨ A
-  | .inl a => .inr a
-  | .inr b => .inl b
+theorem self_imp : A → A := by sorry
 
-/-- Tactic mode constructs the same proof terms interactively. -/
-theorem deMorgan_or : ¬(A ∨ B) ↔ ¬A ∧ ¬B := by
-  constructor
-  · intro h
-    exact ⟨fun a => h (.inl a), fun b => h (.inr b)⟩
-  · rintro ⟨na, nb⟩ (a | b)
-    · exact na a
-    · exact nb b
+theorem imp_const : A → B → A := by sorry
 
-end Logic
+theorem modus_ponens : A → (A → B) → B := by sorry
 
-section Types
+theorem imp_trans : (A → B) → (B → C) → A → C := by sorry
 
-/-- A value type has data constructors, unlike a proposition. -/
-inductive Role where
-  | knight
-  | knave
-  deriving DecidableEq, Repr
+-- ## Conjunction
 
-/-- Pattern matching defines a program over `Role`. -/
-def Role.flip : Role → Role
-  | .knight => .knave
-  | .knave => .knight
+theorem and_intro (a : A) (b : B) : A ∧ B := by sorry
 
-/-- Case analysis proves a fact for every value of a finite type. -/
-theorem Role.flip_flip (r : Role) : r.flip.flip = r := by cases r <;> rfl
+theorem and_left : A ∧ B → A := by sorry
 
-/-- A role-valued islander says `P` exactly when being a knight agrees with `P`. -/
-def Says (r : Role) (P : Prop) : Prop := r = .knight ↔ P
+theorem and_swap : A ∧ B → B ∧ A := by sorry
 
-/-- Worked example: a knight's statement follows from the role-valued model. -/
-theorem says_of_knight {r : Role} {P : Prop} (hr : r = .knight) (h : Says r P) : P :=
-  h.mp hr
+-- ## Disjunction
 
-/-- Equality permits replacement of equals by equals. -/
-theorem eq_trans {α : Type} {x y z : α} (hxy : x = y) (hyz : y = z) : x = z :=
-  hxy.trans hyz
+theorem or_intro_left : A → A ∨ B := by sorry
 
-end Types
+theorem or_elim (f : A → C) (g : B → C) : A ∨ B → C := by sorry
 
-section Functions
+theorem or_swap : A ∨ B → B ∨ A := by sorry
 
-/-- A function is injective when equal outputs came from equal inputs. -/
-def IsInjective {α β : Type} (f : α → β) : Prop :=
-  ∀ x y, f x = f y → x = y
+-- ## False and negation
 
-/-- A function is surjective when every output has a preimage. -/
-def IsSurjective {α β : Type} (f : α → β) : Prop :=
-  ∀ y, ∃ x, f x = y
+theorem ex_falso : False → A := by sorry
 
-/-- Worked example: `Role.flip` is its own inverse, so it is injective. -/
-theorem flip_injective : IsInjective Role.flip := by
-  sorry
+theorem not_intro (h : A → False) : ¬A := by sorry
 
-/-- Live exercise: find a preimage for each role. -/
-theorem flip_surjective : IsSurjective Role.flip := by
-  sorry
+theorem no_contradiction : ¬(A ∧ ¬A) := by sorry
 
-end Functions
+theorem contrapositive (f : A → B) : ¬B → ¬A := by sorry
+
+-- ## Equivalence
+
+theorem iff_of_imps (f : A → B) (g : B → A) : A ↔ B := by sorry
+
+theorem iff_swap : (A ↔ B) → (B ↔ A) := by sorry
+
+end Connectives
+
+section Tactics
+
+variable {A B C : Prop}
+
+theorem imp_trans_tactic : (A → B) → (B → C) → A → C := by sorry
+
+theorem and_swap_tactic : A ∧ B → B ∧ A := by sorry
+
+theorem or_swap_tactic : A ∨ B → B ∨ A := by sorry
+
+theorem contrapositive_tactic (f : A → B) : ¬B → ¬A := by sorry
+
+theorem not_or_iff : ¬(A ∨ B) ↔ ¬A ∧ ¬B := by sorry
+
+end Tactics
+
+section Classical
+
+variable {A B : Prop}
+
+theorem not_not_elim : ¬¬A → A := by sorry
+
+theorem not_and_iff : ¬(A ∧ B) ↔ ¬A ∨ ¬B := by sorry
+
+theorem imp_iff_not_or : (A → B) ↔ ¬A ∨ B := by sorry
+
+end Classical
 
 section Quantifiers
 
-/-- A universal proof supplies a proof at every input. -/
-theorem forall_and {α : Type} (P Q : α → Prop) :
-    (∀ x, P x ∧ Q x) ↔ (∀ x, P x) ∧ (∀ x, Q x) := by
-  constructor
-  · intro h
-    exact ⟨fun x => (h x).left, fun x => (h x).right⟩
-  · rintro ⟨hp, hq⟩ x
-    exact ⟨hp x, hq x⟩
+variable {α : Type} {P Q : α → Prop}
 
-/-- An existential proof packages a witness with its evidence. -/
-theorem exists_or {α : Type} (P Q : α → Prop) :
-    (∃ x, P x ∨ Q x) ↔ (∃ x, P x) ∨ (∃ x, Q x) := by
-  constructor
-  · rintro ⟨x, px | qx⟩
-    · exact .inl ⟨x, px⟩
-    · exact .inr ⟨x, qx⟩
-  · rintro (⟨x, px⟩ | ⟨x, qx⟩)
-    · exact ⟨x, .inl px⟩
-    · exact ⟨x, .inr qx⟩
+theorem forall_imp_of_forall (h : ∀ x, P x → Q x) (hp : ∀ x, P x) : ∀ x, Q x := by sorry
+
+theorem exists_of_forall (a : α) (h : ∀ x, P x) : ∃ x, P x := by sorry
+
+theorem exists_or_iff : (∃ x, P x ∨ Q x) ↔ (∃ x, P x) ∨ (∃ x, Q x) := by sorry
+
+theorem not_forall_of_exists_not (h : ∃ x, ¬P x) : ¬∀ x, P x := by sorry
 
 end Quantifiers
 
 section KnightsAndKnaves
 
-/-
-For an islander, `A` means “A is a knight”.  A hypothesis `A ↔ statement`
-models what A says: a knight's statement is true, and a knave's statement is
-false.  The reverse implication is the knave half of the model.
--/
+open Cyprus.Islanders
 
-/-- Worked model: a knight says that B is a knight exactly when `A ↔ B`. -/
-theorem knight_says_knight {A B : Prop} (hA : A ↔ B) : A → B := hA.mp
+theorem knight_ne_knave : Role.knight ≠ Role.knave := by sorry
 
-/-- Live puzzle: nobody can consistently say “I am a knave.” -/
-theorem live_puzzle_self_accusation (A : Prop) (hA : A ↔ ¬ A) : False := by
+theorem role_dichotomy (r : Role) : r = .knight ∨ r = .knave := by sorry
+
+/-- A says “I am a knave.” -/
+def answerSelfAccusation : Answer ["A"] := sorry
+
+theorem puzzleSelfAccusation (A : Islander) (hA : Says A (role A = .knave)) :
+    claim% answerSelfAccusation [A] := by
   sorry
 
-/-- Live puzzle: A says “I am a knave or B is a knight.” -/
-theorem live_puzzle_knave_or_knight (A B : Prop) (hA : A ↔ (¬ A ∨ B)) : A ∧ B := by
+/-- A says “B is a knight.”  B says “A and I are not the same.” -/
+def answerDifferent : Answer ["A", "B"] := sorry
+
+theorem puzzleDifferent (A B : Islander)
+    (hA : Says A (role B = .knight)) (hB : Says B (role A ≠ role B)) :
+    claim% answerDifferent [A, B] := by
   sorry
 
-/-- Live puzzle: a knight cannot claim that every natural number is at most two. -/
-theorem live_puzzle_bounded_naturals (A : Prop) (hA : A ↔ ∀ n : Nat, n ≤ 2) : ¬ A := by
+/-- A says “We are both knaves.” -/
+def answerBothKnaves : Answer ["A", "B"] := sorry
+
+theorem puzzleBothKnaves (A B : Islander)
+    (hA : Says A (role A = .knave ∧ role B = .knave)) :
+    claim% answerBothKnaves [A, B] := by
   sorry
 
-/- The independent seminar puzzle collection is in `Cyprus.Puzzles`. -/
+/-- A says “Everyone on this island is a knave.” -/
+def answerAllKnaves : Answer ["A"] := sorry
+
+theorem puzzleAllKnaves (A : Islander) (hA : Says A (∀ x, role x = .knave)) :
+    claim% answerAllKnaves [A] := by
+  sorry
 
 end KnightsAndKnaves
 
