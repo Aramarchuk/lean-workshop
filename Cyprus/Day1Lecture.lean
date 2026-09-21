@@ -13,41 +13,104 @@ variable {A B C : Prop}
 
 -- ## Truth and implication
 
-theorem true_is_true : True := by sorry
+#print True
 
-theorem self_imp : A → A := by sorry
+theorem true_is_true : True := by
+  constructor
+  -- .intro
 
-theorem imp_const : A → B → A := by sorry
+#print true_is_true
 
-theorem modus_ponens : A → (A → B) → B := by sorry
+theorem self_imp : A → A := by
+  intro x
+  assumption -- exact x
+  -- fun x => x
 
-theorem imp_trans : (A → B) → (B → C) → A → C := by sorry
+theorem imp_const : A → (B → A) := by
+  intros
+  assumption
+  -- fun x y => x
+
+theorem modus_ponens : A → (A → B) → B := by
+  intros
+  apply_assumption
+  assumption
+  -- fun x f => f x
+
+theorem imp_trans : (A → B) → ((B → C) → (A → C)) := by
+  intros
+  repeat apply_assumption
+  -- fun f => fun g => fun x => g (f x)
 
 -- ## Conjunction
 
-theorem and_intro (a : A) (b : B) : A ∧ B := by sorry
+-- equiv: A → B → A ∧ B
+theorem and_intro (a : A) (b : B) : A ∧ B := by
+  constructor <;> trivial
 
-theorem and_left : A ∧ B → A := by sorry
+theorem and_left : A ∧ B → A := by
+  intro ⟨a, _⟩
+  assumption
+-- option 5:  And.left
+-- option 4:  (·.left)
+-- option 3:  fun p => p.left
+-- option 2:  fun ⟨a, _⟩ => a
+-- option 1:
+--  fun p => match p with
+--    | ⟨a, _⟩ => a
 
-theorem and_swap : A ∧ B → B ∧ A := by sorry
+theorem and_swap : A ∧ B → B ∧ A := by
+  intro ⟨x, y⟩
+  constructor <;> assumption
 
 -- ## Disjunction
 
-theorem or_intro_left : A → A ∨ B := by sorry
+theorem or_intro_left : A → A ∨ B := by
+  intro x
+  left
+  assumption
 
-theorem or_elim (f : A → C) (g : B → C) : A ∨ B → C := by sorry
+theorem or_intro_right : B → A ∨ B := by
+  intro x
+  right
+  assumption
 
-theorem or_swap : A ∨ B → B ∨ A := by sorry
+theorem or_elim (f : A → C) (g : B → C) : A ∨ B → C := by
+  rintro (x | y) <;> solve_by_elim
+--  | .inl x => f x
+--  | .inr y => g y
+
+theorem or_swap : A ∨ B → B ∨ A := by
+  rintro (x | y)
+  case inl =>
+    right
+    assumption
+  case inr =>
+    left
+    assumption
 
 -- ## False and negation
 
-theorem ex_falso : False → A := by sorry
+#print False
 
-theorem not_intro (h : A → False) : ¬A := by sorry
+theorem from_false_anything : False → A := by
+  intro
+  contradiction
+  -- exfalso; assumption
+  -- nofun
 
-theorem no_contradiction : ¬(A ∧ ¬A) := by sorry
+theorem not_intro (h : A → False) : ¬A := by
+  intro
+  contradiction
 
-theorem contrapositive (f : A → B) : ¬B → ¬A := by sorry
+-- no contradiction: look inside, contradiction
+theorem no_contradiction : ¬(A ∧ ¬A) := by
+  rintro ⟨ha, hna⟩
+  contradiction
+
+theorem contrapositive (f : A → B) : ¬B → ¬A := by
+  intro nb a
+  repeat apply_assumption
 
 -- ## Equivalence
 
@@ -105,14 +168,31 @@ open Cyprus.Islanders
 
 theorem knight_ne_knave : Role.knight ≠ Role.knave := by sorry
 
-theorem role_dichotomy (r : Role) : r = .knight ∨ r = .knave := by sorry
+theorem role_dichotomy (r : Role) : r = .knight ∨ r = .knave := by
+  cases r
+  · left; rfl
+  · right; rfl
 
 /-- A says “I am a knave.” -/
-def answerSelfAccusation : Answer ["A"] := sorry
+def answerSelfAccusation : Answer ["A"] := impossible
 
 theorem puzzleSelfAccusation (A : Islander) (hA : Says A (role A = .knave)) :
     claim% answerSelfAccusation [A] := by
-  sorry
+  unfold Says at *
+  cases (role_dichotomy (role A)) with
+  | inl h =>
+    rewrite [h] at hA
+    obtain ⟨hAf, hAb⟩ := hA
+    suffices Role.knight = Role.knave by contradiction
+    apply_assumption
+    rfl
+  | inr h =>
+    rewrite [h] at hA
+    obtain ⟨hAf, hAb⟩ := hA
+    suffices Role.knave = Role.knight by contradiction
+    apply_assumption
+    rfl
+
 
 /-- A says “B is a knight.”  B says “A and I are not the same.” -/
 def answerDifferent : Answer ["A", "B"] := sorry
