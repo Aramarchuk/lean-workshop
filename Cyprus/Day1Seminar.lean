@@ -34,17 +34,23 @@ section Implication
 
 variable {A B C : Prop}
 
-theorem imp_comp_flipped : (B → C) → (A → B) → A → C :=
-sorry
+theorem imp_comp_flipped : (B → C) → (A → B) → A → C := fun f g x => f (g x)
 
-theorem imp_weaken : (A → C) → A → B → C :=
-sorry
+theorem imp_weaken : (A → C) → A → B → C := by
+    intro f x y
+    apply f
+    assumption
 
-theorem imp_apply_both : A → B → (A → B → C) → C :=
-sorry
+theorem imp_apply_both : A → B → (A → B → C) → C := by
+    intro x y f
+    apply f
+    · exact x
+    · exact y
 
-theorem imp_of_self_imp (f : (A → A) → B) : B :=
-sorry
+theorem imp_of_self_imp (f : (A → A) → B) : B := by
+    apply f
+    intros
+    assumption
 
 end Implication
 
@@ -52,11 +58,9 @@ section AndOr
 
 variable {A B C D : Prop}
 
-theorem and_map_left (f : A → C) (h : A ∧ B) : C ∧ B :=
-sorry
+theorem and_map_left (f : A → C) (h : A ∧ B) : C ∧ B := ⟨ (match h with | ⟨a, _⟩ => f a), h.right⟩
 
-theorem and_assoc_back (h : A ∧ (B ∧ C)) : (A ∧ B) ∧ C :=
-sorry
+theorem and_assoc_back (h : A ∧ (B ∧ C)) : (A ∧ B) ∧ C := ⟨ ⟨h.left, h.right.left ⟩, h.right.right ⟩
 
 theorem or_elim_triple (f : A → D) (g : B → D) (k : C → D) (h : A ∨ B ∨ C) : D :=
 sorry
