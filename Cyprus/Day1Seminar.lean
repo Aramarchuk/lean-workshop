@@ -63,16 +63,24 @@ theorem and_map_left (f : A → C) (h : A ∧ B) : C ∧ B := ⟨ (match h with 
 theorem and_assoc_back (h : A ∧ (B ∧ C)) : (A ∧ B) ∧ C := ⟨ ⟨h.left, h.right.left ⟩, h.right.right ⟩
 
 theorem or_elim_triple (f : A → D) (g : B → D) (k : C → D) (h : A ∨ B ∨ C) : D :=
-sorry
+    h.elim
+        (f)
+        (fun bc => bc.elim g k)
 
 theorem and_or_distrib (h : A ∧ (B ∨ C)) : (A ∧ B) ∨ (A ∧ C) :=
-sorry
+    match h.right with
+    | Or.inl hb => Or.inl (And.intro h.left hb)
+    | Or.inr hc => Or.inr (And.intro h.left hc)
 
 theorem or_and_distrib (h : A ∨ (B ∧ C)) : (A ∨ B) ∧ (A ∨ C) :=
-sorry
+    match h with
+    | Or.inl ha => And.intro (Or.inl ha) (Or.inl ha)
+    | Or.inr hbc => And.intro (Or.inr hbc.left) (Or.inr hbc.right)
 
-theorem curry_and_iff : ((A ∧ B) → C) ↔ (A → B → C) :=
-sorry
+theorem curry_and_iff : ((A ∧ B) → C) ↔ (A → B → C) := by
+    constructor
+    · intro x y z; apply x; exact ⟨y, z⟩
+    · intro x ⟨y, z⟩; apply x; assumption; assumption
 
 end AndOr
 
