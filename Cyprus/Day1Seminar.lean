@@ -89,17 +89,29 @@ section Negation
 variable {A B : Prop}
 
 theorem not_not_intro : A → ¬¬A :=
-sorry
+    fun ha => (fun hna => hna ha)
+
 
 theorem not_of_imp_not (f : A → ¬A) : ¬A :=
-sorry
+    fun ha: A => (f ha) ha
 
-theorem iff_not_congr (h : A ↔ B) : ¬A ↔ ¬B :=
-sorry
+
+theorem iff_not_congr (h : A ↔ B) : ¬A ↔ ¬B := by
+    constructor
+    · intro hna hb; apply hna; apply h.mpr; exact hb
+    · intro hna ha; apply hna; apply h.mp; exact ha
+
 
 /-- Excluded middle holds up to a double negation, with no classical axiom. -/
-theorem not_not_em : ¬¬(A ∨ ¬A) :=
-sorry
+/- (((A ∨ ¬A) → False) → False) -/
+theorem not_not_em : ¬¬(A ∨ ¬A) := by
+    intro f
+    apply f
+    right
+    intro ha
+    apply f
+    left
+    exact ha
 
 end Negation
 
@@ -109,8 +121,14 @@ variable {A B C : Prop}
 
 /-! Write the proofs in this section in tactic mode. -/
 
-theorem or_comm_iff : A ∨ B ↔ B ∨ A :=
-sorry
+theorem or_comm_iff : A ∨ B ↔ B ∨ A := by
+    constructor <;>
+    · intro hab
+      cases hab with
+    | inl ha =>
+        right
+        exact ha
+    | inr ha => left; assumption;
 
 theorem imp_and_iff : (A → B ∧ C) ↔ (A → B) ∧ (A → C) :=
 sorry
